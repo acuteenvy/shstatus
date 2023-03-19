@@ -3,9 +3,6 @@
 readonly header='{"version":1}'
 readonly blocktmpl='{"color":"#COLOR","full_text":"TEXT"},'
 
-echo "$header"
-echo "["
-
 err() {
     local blk="${blocktmpl/COLOR/ff0000}"
     echo "[${blk/TEXT/error: $1}]"
@@ -21,7 +18,8 @@ block() {
 
 disk() {
     local disk size used avail usepercent mountpoint dfinfo
-    dfinfo="$(df -h "$3")"
+    ! dfinfo="$(df -h "$4")" && block "$1" "${3/\%disk/$4}" && return
+
     dfinfo="${dfinfo#*$'\n'}"
     IFS=" " read -r disk size used avail usepercent mountpoint <<< "$dfinfo"
 
@@ -98,6 +96,17 @@ datetime() {
 
     block "$1" "$txt"
 }
+
+case "$1" in
+    "help" | "-h" | "--help") cat << EOF
+Usage: $(basename "$0") [config-file]
+See 'man shstatus' for more information
+EOF
+    exit 0
+esac
+
+echo "$header"
+echo "["
 
 config="/etc/shstatus/config.sh"
 [[ -f "$HOME/.config/shstatus/config.sh" ]] && config="$HOME/.config/shstatus/config.sh"

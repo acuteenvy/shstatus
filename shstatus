@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+readonly header='{"version":1}'
+readonly blocktmpl='{"color":"#COLOR","full_text":"TEXT"},'
+
+echo "$header"
+echo "["
+
+err() {
+    local blk="${blocktmpl/COLOR/ff0000}"
+    echo "[${blk/TEXT/error: $1}]"
+    sleep infinity
+}
+
+block() {
+    local blk="${blocktmpl/COLOR/$1}"; shift
+
+    blk="${blk/TEXT/$*}"
+    echo -n "$blk"
+}
+
+disk() {
+    local disk size used avail usepercent mountpoint dfinfo
+    dfinfo="$(df -h "$3")"
+    dfinfo="${dfinfo#*$'\n'}"
+    IFS=" " read -r disk size used avail usepercent mountpoint <<< "$dfinfo"
+
+    local txt="${2/\%disk/$disk}"
+    txt="${txt/\%size/$size}"
+    txt="${txt/\%used/$used}"
+    txt="${txt/\%avail/$avail}"
+    txt="${txt/\%usepercent/$usepercent}"
+    txt="${txt/\%mountpoint/$mountpoint}"
+
+    block "$1" "$txt"
+}
+
+loadavg() {
+    local load1 load5 load15
+    IFS=" " read -r load1 load5 load15 _ _ < /proc/loadavg
+
+    local txt="${2/\%load1/$load1}"
+    txt="${txt/\%load5/$load5}"
+    txt="${txt/\%load15/$load15}"
+
+    block "$1" "$txt"
+}
+
+mem() {
+    local memtotal memused memavail swaptotal swapused swapavail
+    free="$(free -h)"
+    free="${free#*$'\n'}"
+
+    IFS=" " read -r _ memtotal memused _ _ _ memavail <<< "$free"
+    free="${free#*$'\n'}"
+    IFS=" " read -r _ swaptotal swapused swapavail <<< "$free"
+
+    local txt="${2/\%memtotal/$memtotal}"
+    txt="${txt/\%memused/$memused}"
+    txt="${txt/\%memavail/$memavail}"
+    txt="${txt/\%swaptotal/$swaptotal}"
+    txt="${txt/\%swapused/$swapused}"
+    txt="${txt/\%swapavail/$swapavail}"
+
+    block "$1" "$txt"
+}
+
+pavol() {
+    local vol
+    vol="$(pactl get-sink-volume "$3" 2> /dev/null | \
+        awk -F'/' '{ print $2 }')"
+    [[ -z $vol ]] && vol="0%"
+    vol="${vol//[[:space:]]/}"
+
+    local txt="${2/\%vol/$vol}"
+
+    block "$1" "$txt"
+}
+
+pwvol() {
+    local vol
+    vol="$(wpctl get-volume "$3" 2> /dev/null)"
+    [[ -z $vol ]] && vol=0
+    vol="${vol/Volume: /}"
+    vol="${vol/./}"
+    vol=$((10#$vol))
+
+    local txt="${2/\%vol/$vol%}"
+
+    block "$1" "$txt"
+}
+
+datetime() {
+    local date
+    date="$(date "+$3")"
+
+    local txt="${2/\%date/$date}"
+
+    block "$1" "$txt"
+}
+
+config="/etc/shstatus/config.sh"
+[[ -f "$HOME/.config/shstatus/config.sh" ]] && config="$HOME/.config/shstatus/config.sh"
+[[ -n $1 ]] && config="$1"
+[[ ! -f $config ]] && err "'$config': not a file"
+
+# shellcheck disable=1090
+source "$config"
+
+[[ -z $interval ]] && err "interval not specified"
+[[ $(type -t update) != "function" ]] && err "update() is undefined"
+
+while true; do
+    echo "["
+    update
+    echo -e "\n],"
+    sleep "$interval"
+done

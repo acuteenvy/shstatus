@@ -1,0 +1,112 @@
+.TH "SHSTATUS" "1" "2023\-03\-20"  "shstatus 0.1.0" "shstatus manual"
+.nh
+.ad l
+.SH NAME
+shstatus \- a simple statusline generator for i3bar and swaybar
+
+.SH SYNOPSIS
+\fIshstatus\fR [config-file]
+
+.SH CONFIGURATION
+.TP
+shstatus looks for configuration files in the following order:
+.sp
+.RS 4
+1. \fB~/config/shstatus/config.sh\fR
+.sp
+2. \fB/etc/shstatus/config.sh\fR
+.RE
+.sp
+Specifying an alternate config file overrides the default paths.
+.sp
+In the config file, you have to define:
+.sp
+.RS 4
+1. A variable '\fBinterval\fR'
+.sp
+2. A function '\fBupdate\fR'
+.RE
+.sp
+\fBupdate()\fR will be run every '\fBinterval\fR' seconds to update the status bar. You can see an example config file in \fB/etc/shstatus/config.sh\fR.
+.br
+Inside \fBupdate()\fR you can either use some builtin blocks or write your own.
+
+.SH BUILTIN BLOCKS
+.TP
+\fBdatetime\fR <color> <formatstring> <date-formatstring>
+Shows the date and time.
+.sp
+Available <formastring> variables:
+.br
+\fB%date\fR \- output of \fBdate\fR(1) +'<date-formatstring>'
+
+.TP
+\fBpwvol\fR <color> <formatstring> <pipewire-sink>
+Shows the current volume. Works on pipewire with wireplumber.
+.sp
+Available <formatstring> variables:
+.br
+\fB%vol\fR - current volume
+
+.TP
+\fBpavol\fR <color> <formatstring> <pulseaudio-sink>
+Same as \fBpwvol\fR, but for pulseaudio.
+
+.TP
+\fBdisk\fR <color> <formatstring> <unmounted-formatstring> <device/mountpoint>
+Shows disk usage.
+.sp
+Available <formatstring> variables:
+.br
+\fB%disk\fR - device
+.br
+\fB%size\fR - disk size
+.br
+\fB%used\fR - used disk space
+.br
+\fB%avail\fR - available disk space
+.br
+\fB%usepercent\fR - percentage of used disk space
+.br
+\fB%mountpoint\fR - device mountpoint
+.sp
+Available <unmounted-formatstring> variables:
+.br
+\fB%disk\fR - device
+
+.TP
+\fBmem\fR <color> <formatstring>
+Shows memory and swap usage.
+.sp
+Available <formatstring> variables:
+.br
+\fB%memtotal\fR - total memory
+.br
+\fB%memused\fR - used memory
+.br
+\fB%memavail\fR - available memory
+.br
+\fB%swaptotal\fR - total swap
+.br
+\fB%swapused\fR - used swap
+.br
+\fB%swapavail\fR - available swap
+
+.TP
+\fBloadavg\fR <color> <formatstring>
+Shows the load average.
+.sp
+Available <formatstring> variables:
+.br
+\fB%load1\fR - load average during the last 1 minute
+.br
+\fB%load5\fR - load average during the last 5 minutes
+.br
+\fB%load15\fR - load average during the last 15 minutes
+
+.TP
+\fBblock\fR <color> <text>
+Generic block generator. Useful for writing your own blocks.
+
+.SH SEE ALSO
+\fBdate\fR(1), \fBpactl\fR(1)

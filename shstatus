@@ -1,50 +1,77 @@
 #!/usr/bin/env bash
 
-readonly header='{"version":1}'
-readonly blocktmpl='{"color":"#COLOR","full_text":"TEXT"},'
-
 err() {
-    local blk="${blocktmpl/COLOR/ff0000}"
-    echo "[${blk/TEXT/error: $1}]"
+    echo "[{\"color\":\"#ff0000\",\"full_text\":\"$*\"}]"
     sleep infinity
 }
 
 block() {
-    local blk="${blocktmpl/COLOR/$1}"; shift
+    echo -n "{"
 
-    blk="${blk/TEXT/$*}"
-    echo -n "$blk"
+    [[ -n $full_text ]] && echo -n "\"full_text\":\"$full_text\","
+    [[ -n $short_text ]] && echo -n "\"short_text\":\"$short_text\","
+    [[ -n $color ]] && echo -n "\"color\":\"$color\","
+    [[ -n $background ]] && echo -n "\"background\":\"$background\","
+    [[ -n $border ]] && echo -n "\"border\":\"$border\","
+    [[ -n $border_top ]] && echo -n "\"border_top\":$border_top,"
+    [[ -n $border_bottom ]] && echo -n "\"border_bottom\":$border_bottom,"
+    [[ -n $border_left ]] && echo -n "\"border_left\":$border_left,"
+    [[ -n $border_right ]] && echo -n "\"border_right\":$border_right,"
+    [[ -n $min_width ]] && echo -n "\"min_width\":\"$min_width\","
+    [[ -n $align ]] && echo -n "\"align\":\"$align\","
+    [[ -n $urgent ]] && echo -n "\"urgent\":$urgent,"
+    [[ -n $separator ]] && echo -n "\"separator\":$separator,"
+    [[ -n $separator_block_width ]] && echo -n "\"separator_block_width\":$separator_block_width,"
+
+    echo -n "},"
 }
 
-disk() {
+block_disk() {
     local disk size used avail usepercent mountpoint dfinfo
-    ! dfinfo="$(df -h "$4")" && block "$1" "${3/\%disk/$4}" && return
+    ! dfinfo="$(df -h "$1")" && return
 
     dfinfo="${dfinfo#*$'\n'}"
     IFS=" " read -r disk size used avail usepercent mountpoint <<< "$dfinfo"
 
-    local txt="${2/\%disk/$disk}"
-    txt="${txt/\%size/$size}"
-    txt="${txt/\%used/$used}"
-    txt="${txt/\%avail/$avail}"
-    txt="${txt/\%usepercent/$usepercent}"
-    txt="${txt/\%mountpoint/$mountpoint}"
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%disk/$disk}"
+        full_text="${full_text/\%size/$size}"
+        full_text="${full_text/\%used/$used}"
+        full_text="${full_text/\%avail/$avail}"
+        full_text="${full_text/\%usepercent/$usepercent}"
+        full_text="${full_text/\%mountpoint/$mountpoint}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%disk/$disk}"
+        short_text="${short_text/\%size/$size}"
+        short_text="${short_text/\%used/$used}"
+        short_text="${short_text/\%avail/$avail}"
+        short_text="${short_text/\%usepercent/$usepercent}"
+        short_text="${short_text/\%mountpoint/$mountpoint}"
+    fi
 
-    block "$1" "$txt"
+    block
 }
 
-loadavg() {
+block_loadavg() {
     local load1 load5 load15
     IFS=" " read -r load1 load5 load15 _ _ < /proc/loadavg
 
-    local txt="${2/\%load1/$load1}"
-    txt="${txt/\%load5/$load5}"
-    txt="${txt/\%load15/$load15}"
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%load1/$load1}"
+        full_text="${full_text/\%load5/$load5}"
+        full_text="${full_text/\%load15/$load15}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%load1/$load1}"
+        short_text="${short_text/\%load5/$load5}"
+        short_text="${short_text/\%load15/$load15}"
+    fi
 
-    block "$1" "$txt"
+    block
 }
 
-mem() {
+block_mem() {
     local memtotal memused memavail swaptotal swapused swapavail
     free="$(free -h)"
     free="${free#*$'\n'}"
@@ -53,48 +80,61 @@ mem() {
     free="${free#*$'\n'}"
     IFS=" " read -r _ swaptotal swapused swapavail <<< "$free"
 
-    local txt="${2/\%memtotal/$memtotal}"
-    txt="${txt/\%memused/$memused}"
-    txt="${txt/\%memavail/$memavail}"
-    txt="${txt/\%swaptotal/$swaptotal}"
-    txt="${txt/\%swapused/$swapused}"
-    txt="${txt/\%swapavail/$swapavail}"
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%memtotal/$memtotal}"
+        full_text="${full_text/\%memused/$memused}"
+        full_text="${full_text/\%memavail/$memavail}"
+        full_text="${full_text/\%swaptotal/$swaptotal}"
+        full_text="${full_text/\%swapused/$swapused}"
+        full_text="${full_text/\%swapavail/$swapavail}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%memtotal/$memtotal}"
+        short_text="${short_text/\%memused/$memused}"
+        short_text="${short_text/\%memavail/$memavail}"
+        short_text="${short_text/\%swaptotal/$swaptotal}"
+        short_text="${short_text/\%swapused/$swapused}"
+        short_text="${short_text/\%swapavail/$swapavail}"
+    fi
 
-    block "$1" "$txt"
+    block
 }
 
-pavol() {
+block_pavol() {
     local vol
-    vol="$(pactl get-sink-volume "$3" 2> /dev/null | \
+    vol="$(pactl get-sink-volume "$1" 2> /dev/null | \
         awk -F'/' '{ print $2 }')"
-    [[ -z $vol ]] && vol="0%"
+    [[ -z $vol ]] && return
     vol="${vol//[[:space:]]/}"
 
-    local txt="${2/\%vol/$vol}"
+    [[ -n $full_text ]] && local full_text="${full_text/\%vol/$vol%}"
+    [[ -n $short_text ]] && local short_text="${short_text/\%vol/$vol%}"
 
-    block "$1" "$txt"
+    block
 }
 
-pwvol() {
+block_pwvol() {
     local vol
-    vol="$(wpctl get-volume "$3" 2> /dev/null)"
-    [[ -z $vol ]] && vol=0
+    vol="$(wpctl get-volume "$1" 2> /dev/null)"
+    [[ -z $vol ]] && return
     vol="${vol/Volume: /}"
     vol="${vol/./}"
     vol=$((10#$vol))
 
-    local txt="${2/\%vol/$vol%}"
+    [[ -n $full_text ]] && local full_text="${full_text/\%vol/$vol%}"
+    [[ -n $short_text ]] && local short_text="${short_text/\%vol/$vol%}"
 
-    block "$1" "$txt"
+    block
 }
 
-datetime() {
+block_datetime() {
     local date
-    date="$(date "+$3")"
+    date="$(date "+$1")"
 
-    local txt="${2/\%date/$date}"
+    [[ -n $full_text ]] && local full_text="${full_text/\%date/$date}"
+    [[ -n $short_text ]] && local short_text="${short_text/\%date/$date}"
 
-    block "$1" "$txt"
+    block
 }
 
 case "$1" in
@@ -105,7 +145,7 @@ EOF
     exit 0
 esac
 
-echo "$header"
+echo '{"version":1}'
 echo "["
 
 config="/etc/shstatus/config.sh"

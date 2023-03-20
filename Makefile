@@ -1,9 +1,8 @@
-ifndef PREFIX
-	PREFIX = /usr/local
-endif
-ifndef MANPREFIX
-	MANPREFIX = $(PREFIX)/share/man
-endif
+PREFIX ?= /usr/local
+MANPREFIX ?= $(PREFIX)/share/man
+
+help:
+	@echo "Run 'make install' to install shstatus or 'make uninstall' to uninstall it."
 
 install:
 	install -Dm755 shstatus $(DESTDIR)$(PREFIX)/bin/shstatus
@@ -15,4 +14,4 @@ uninstall:
 	rm -f $(DESTDIR)/etc/shstatus/config.sh
 	rm -f $(DESTDIR)$(MANPREFIX)/man1/shstatus.1
 
-.PHONY: install uninstall
+.PHONY: help install uninstall

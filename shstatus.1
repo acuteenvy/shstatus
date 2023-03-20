@@ -1,4 +1,4 @@
-.TH "SHSTATUS" "1" "2023\-03\-20"  "shstatus 0.1.0" "shstatus manual"
+.TH "SHSTATUS" "1" "2023\-03\-21"  "shstatus 0.1.0" "shstatus manual"
 .nh
 .ad l
 .SH NAME
@@ -28,35 +28,39 @@ In the config file, you have to define:
 .RE
 .sp
 \fBupdate()\fR will be run every '\fBinterval\fR' seconds to update the status bar. You can see an example config file in \fB/etc/shstatus/config.sh\fR.
-.br
-Inside \fBupdate()\fR you can either use some builtin blocks or write your own.
+.sp
+Inside \fBupdate()\fR you can either use some builtin blocks or write your own.\&
+Before using a builtin block function, you can define variables to customize their output.\&
+For a list of variables, see \fBswaybar-protocol\fR(7) or \fBhttps://i3wm.org/docs/i3bar-protocol.html\fR.\&
+Inside 'full_text' and 'short_text' additional variables for each block are available.\&
+They are described in the next section.
 
 .SH BUILTIN BLOCKS
 .TP
-\fBdatetime\fR <color> <formatstring> <date-formatstring>
+\fBblock_datetime\fR <date-formatstring>
 Shows the date and time.
 .sp
-Available <formastring> variables:
+Available variables:
 .br
 \fB%date\fR \- output of \fBdate\fR(1) +'<date-formatstring>'
 
 .TP
-\fBpwvol\fR <color> <formatstring> <pipewire-sink>
+\fBblock_pwvol\fR <pipewire-sink>
 Shows the current volume. Works on pipewire with wireplumber.
 .sp
-Available <formatstring> variables:
+Available variables:
 .br
 \fB%vol\fR - current volume
 
 .TP
-\fBpavol\fR <color> <formatstring> <pulseaudio-sink>
-Same as \fBpwvol\fR, but for pulseaudio.
+\fBblock_pavol\fR <pulseaudio-sink>
+Same as \fBblock_pwvol\fR, but for pulseaudio.
 
 .TP
-\fBdisk\fR <color> <formatstring> <unmounted-formatstring> <device/mountpoint>
+\fBblock_disk\fR <device or mountpoint>
 Shows disk usage.
 .sp
-Available <formatstring> variables:
+Available variables:
 .br
 \fB%disk\fR - device
 .br
@@ -69,16 +73,12 @@ Available <formatstring> variables:
 \fB%usepercent\fR - percentage of used disk space
 .br
 \fB%mountpoint\fR - device mountpoint
-.sp
-Available <unmounted-formatstring> variables:
-.br
-\fB%disk\fR - device
 
 .TP
-\fBmem\fR <color> <formatstring>
+\fBblock_mem\fR
 Shows memory and swap usage.
 .sp
-Available <formatstring> variables:
+Available variables:
 .br
 \fB%memtotal\fR - total memory
 .br
@@ -93,10 +93,10 @@ Available <formatstring> variables:
 \fB%swapavail\fR - available swap
 
 .TP
-\fBloadavg\fR <color> <formatstring>
+\fBblock_loadavg\fR
 Shows the load average.
 .sp
-Available <formatstring> variables:
+Available variables:
 .br
 \fB%load1\fR - load average during the last 1 minute
 .br
@@ -105,8 +105,9 @@ Available <formatstring> variables:
 \fB%load15\fR - load average during the last 15 minutes
 
 .TP
-\fBblock\fR <color> <text>
-Generic block generator. Useful for writing your own blocks.
+\fBblock\fR
+.br
+Generic block generator without any variables. Useful for writing your own blocks.
 
 .SH SEE ALSO
 \fBdate\fR(1), \fBpactl\fR(1)

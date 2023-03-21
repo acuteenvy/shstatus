@@ -11,6 +11,13 @@ kern() {
     block
 }
 
+backlight() {
+    local full_text="BRIGHTNESS: %percentage"
+    local color="#f9e2af"
+
+    block_backlight "intel_backlight" "actual_brightness"
+}
+
 battery() {
     local full_text="BAT: %percentage"
     local color="#94e2d5"
@@ -55,6 +62,7 @@ datetime() {
 
 update() {
     kern
+    backlight
     loadavg
     mem
     disk

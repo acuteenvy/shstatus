@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# shstatus - a simple statusline generator for i3bar and swaybar
+# https://github.com/acuteenvy/shstatus
+# License: MIT
+
+
 err() {
     # Display a red message in the bar
     echo "[{\"color\":\"#ff0000\",\"full_text\":\"$*\"}]"
@@ -30,11 +35,36 @@ block() {
     echo -n "},"
 }
 
+block_backlight() {
+    local current max percentage
+    declare -r path="/sys/class/backlight"
+
+    [[ $# -lt 2 || ! -d $path/$1 || ! -f $path/$1/$2 ]] && return
+    read -r current < "$path/$1/$2"
+    read -r max < "$path/$1/max_brightness"
+    local percentage=$((current * 100 / max))
+
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%current/$current}"
+        full_text="${full_text/\%max/$max}"
+        full_text="${full_text/\%percentage/$percentage%}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%current/$current}"
+        short_text="${short_text/\%max/$max}"
+        short_text="${short_text/\%percentage/$percentage%}"
+    fi
+
+    block
+}
+
 block_battery() {
     local percentage status
-    [[ -z $1 || ! -d /sys/class/power_supply/$1 ]] && return
-    read -r percentage < "/sys/class/power_supply/$1/capacity"
-    read -r status < "/sys/class/power_supply/$1/status"
+    declare -r path="/sys/class/power_supply"
+
+    [[ -z $1 || ! -d $path/$1 ]] && return
+    read -r percentage < "$path/$1/capacity"
+    read -r status < "$path/$1/status"
 
     if [[ -n $full_text ]]; then
         local full_text="${full_text/\%percentage/$percentage%}"

@@ -127,28 +127,53 @@ block_mem() {
 }
 
 block_pavol() {
-    local vol
+    local vol mutestatus
     vol="$(pactl get-sink-volume "$1" 2> /dev/null | \
         awk -F'/' '{ print $2 }')"
     [[ -z $vol ]] && return
     vol="${vol//[[:space:]]/}"
 
-    [[ -n $full_text ]] && local full_text="${full_text/\%vol/$vol%}"
-    [[ -n $short_text ]] && local short_text="${short_text/\%vol/$vol%}"
+    mutestatus="$(pactl get-sink-mute "$1" 2> /dev/null)"
+    [[ -z $mutestatus ]] && return
+    if [[ $mutestatus == *yes* ]]; then
+        mutestatus="$2"
+    else
+        mutestatus=""
+    fi
+
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%vol/$vol}"
+        full_text="${full_text/\%mutestatus/$mutestatus}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%vol/$vol}"
+        short_text="${short_text/\%mutestatus/$mutestatus}"
+    fi
 
     block
 }
 
 block_pwvol() {
-    local vol
-    vol="$(wpctl get-volume "$1" 2> /dev/null)"
+    local vol mutestatus
+    IFS=" " read -r _ vol mutestatus <<< "$(wpctl get-volume "$1" 2> /dev/null)"
     [[ -z $vol ]] && return
-    vol="${vol/Volume: /}"
     vol="${vol/./}"
     vol=$((10#$vol))
 
-    [[ -n $full_text ]] && local full_text="${full_text/\%vol/$vol%}"
-    [[ -n $short_text ]] && local short_text="${short_text/\%vol/$vol%}"
+    if [[ $mutestatus == "[MUTED]" ]]; then
+        mutestatus="$2"
+    else
+        mutestatus=""
+    fi
+
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%vol/$vol%}"
+        full_text="${full_text/\%mutestatus/$mutestatus}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%vol/$vol%}"
+        short_text="${short_text/\%mutestatus/$mutestatus}"
+    fi
 
     block
 }

@@ -40,10 +40,10 @@ disk() {
 }
 
 vol() {
-    local full_text="VOL: %vol"
+    local full_text="VOL: %vol%mutestatus"
     local color="#cba6f7"
 
-    block_pwvol "@DEFAULT_SINK@"
+    block_pwvol "@DEFAULT_SINK@" " [MUTED]"
 }
 
 datetime() {

@@ -45,15 +45,17 @@ Available variables:
 \fB%date\fR \- output of \fBdate\fR(1) +'<date-formatstring>'
 
 .TP
-\fBblock_pwvol\fR <pipewire-sink>
+\fBblock_pwvol\fR <pipewire-sink> <mute-string>
 Shows the current volume. Works on pipewire with wireplumber.
 .sp
 Available variables:
 .br
 \fB%vol\fR - current volume
+.br
+\fB%mutestatus\fR - if volume is muted, this variable contains <mute-string>. Otherwise it is empty.
 
 .TP
-\fBblock_pavol\fR <pulseaudio-sink>
+\fBblock_pavol\fR <pulseaudio-sink> <mute-string>
 Same as \fBblock_pwvol\fR, but for pulseaudio.
 
 .TP
@@ -110,4 +112,12 @@ Available variables:
 Generic block generator without any variables. Useful for writing your own blocks.
 
 .SH SEE ALSO
-\fBdate\fR(1), \fBpactl\fR(1)
+\fBswaybar-protocol\fR(7), \fBdate\fR(1), \fBpactl\fR(1)
+.sp
+i3bar protocol specification
+.br
+.B https://i3wm.org/docs/i3bar-protocol.html
+.sp
+Repository
+.br
+.B https://github.com/acuteenvy/shstatus

@@ -11,6 +11,13 @@ kern() {
     block
 }
 
+battery() {
+    local full_text="BAT: %percentage"
+    local color="#94e2d5"
+
+    block_battery "BAT1"
+}
+
 loadavg() {
     local full_text="LOADAVG: %load1 / %load5 / %load15"
     local color="#f38ba8"
@@ -52,5 +59,6 @@ update() {
     mem
     disk
     vol
+    battery
     datetime
 }

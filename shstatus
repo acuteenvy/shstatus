@@ -26,6 +26,24 @@ block() {
     echo -n "},"
 }
 
+block_battery() {
+    local percentage status
+    [[ -z $1 || ! -d /sys/class/power_supply/$1 ]] && return
+    read -r percentage < "/sys/class/power_supply/$1/capacity"
+    read -r status < "/sys/class/power_supply/$1/status"
+
+    if [[ -n $full_text ]]; then
+        local full_text="${full_text/\%percentage/$percentage%}"
+        full_text="${full_text/\%status/$status}"
+    fi
+    if [[ -n $short_text ]]; then
+        local short_text="${short_text/\%percentage/$percentage%}"
+        short_text="${short_text/\%status/$status}"
+    fi
+
+    block
+}
+
 block_disk() {
     local disk size used avail usepercent mountpoint dfinfo
     ! dfinfo="$(df -h "$1")" && return

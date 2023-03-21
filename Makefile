@@ -11,7 +11,7 @@ install:
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/shstatus
-	rm -f $(DESTDIR)/etc/shstatus/config.sh
+	rm -rf $(DESTDIR)/etc/shstatus
 	rm -f $(DESTDIR)$(MANPREFIX)/man1/shstatus.1
 
 .PHONY: help install uninstall

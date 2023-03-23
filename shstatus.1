@@ -45,7 +45,7 @@ Shows the date and time.
 .sp
 Available variables:
 .br
-\fB%date\fR - output of \fBdate\fR(1) +'<date-formatstring>'
+\fB%date\fR - output of \fBdate\fR(1) +'\fI<date-formatstring>\fR'
 
 .TP
 \fBblock_pwvol\fR <pipewire-sink> <mute-string>
@@ -55,7 +55,7 @@ Available variables:
 .br
 \fB%vol\fR        - current volume
 .br
-\fB%mutestatus\fR - if volume is muted, this variable contains <mute-string>. Otherwise it is empty.
+\fB%mutestatus\fR - if volume is muted, this variable contains \fI<mute-string>\fR. Otherwise it is empty.
 
 .TP
 \fBblock_pavol\fR <pulseaudio-sink> <mute-string>
@@ -110,7 +110,7 @@ Available variables:
 \fB%load15\fR - load average during the last 15 minutes
 
 .TP
-\fBblock_battery\fR <battery-name>
+\fBblock_battery\fR <battery-name> <discharging-label> <charging-label> <full-label>
 Shows battery information.
 .sp
 To list available batteries, run '\fBls /sys/class/power_supply\fR'
@@ -119,21 +119,22 @@ Available variables:
 .br
 \fB%percentage\fR - battery percentage
 .br
-\fB%status\fR     - battery status (discharging/charging/full)
+\fB%status\fR     - depending on the current battery status, this contains either\&
+\fI<discharging-label>\fR, \fI<charging-label>\fR or \fI<full-label>\fR.
 
 .TP
 \fBblock_backlight\fR <card> <brightness-file>
 Shows information about the current monitor brightness.
 .sp
-<brightness_file> can be either '\fBactual_brightness\fR' or '\fBbrightness\fR'.
+\fI<brightness_file>\fR can be either '\fBactual_brightness\fR' or '\fBbrightness\fR'.
 .br
 To list available cards, run '\fBls /sys/class/backlight\fR'
 .sp
 Available variables:
 .br
-\fB%current\fR    - contents of /sys/class/backlight/<card>/<brightness-file>
+\fB%current\fR    - contents of \fB/sys/class/backlight/\fI<card>\fB/\fI<brightness-file>\fR
 .br
-\fB%max\fR        - contents of /sys/class/backlight/<card>/max_brightness
+\fB%max\fR        - contents of \fB/sys/class/backlight/\fI<card>\fB/max_brightness\fR
 .br
 \fB%percentage\fR - brightness percentage
 

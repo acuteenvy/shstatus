@@ -19,10 +19,10 @@ backlight() {
 }
 
 battery() {
-    local full_text="BAT: %percentage"
+    local full_text="BAT: %status %percentage"
     local color="#94e2d5"
 
-    block_battery "BAT1"
+    block_battery "BAT1" "CHR" "DIS" "FULL"
 }
 
 loadavg() {

@@ -36,10 +36,11 @@ block() {
 }
 
 block_backlight() {
-    local current max percentage
     declare -r path="/sys/class/backlight"
-
     [[ $# -lt 2 || ! -d $path/$1 || ! -f $path/$1/$2 ]] && return
+
+    local current max percentage
+
     read -r current < "$path/$1/$2"
     read -r max < "$path/$1/max_brightness"
     local percentage=$((current * 100 / max))
@@ -59,12 +60,18 @@ block_backlight() {
 }
 
 block_battery() {
-    local percentage status
     declare -r path="/sys/class/power_supply"
+    [[ $# -lt 4 || ! -d $path/$1 || ! -f $path/$1/capacity ]] && return
 
-    [[ -z $1 || ! -d $path/$1 ]] && return
+    local percentage status
+
     read -r percentage < "$path/$1/capacity"
     read -r status < "$path/$1/status"
+    case "$status" in
+        Charging) status="$2";;
+        Discharging) status="$3";;
+        Full) status="$4";;
+    esac
 
     if [[ -n $full_text ]]; then
         local full_text="${full_text/\%percentage/$percentage%}"
@@ -79,6 +86,8 @@ block_battery() {
 }
 
 block_disk() {
+    [[ $# -lt 1 ]] && return
+
     local disk size used avail usepercent mountpoint dfinfo
     ! dfinfo="$(df -h "$1")" && return
 
@@ -157,6 +166,8 @@ block_mem() {
 }
 
 block_pavol() {
+    [[ $# -lt 2 ]] && return
+
     local vol mutestatus
     vol="$(pactl get-sink-volume "$1" 2> /dev/null | \
         awk -F'/' '{ print $2 }')"
@@ -184,6 +195,8 @@ block_pavol() {
 }
 
 block_pwvol() {
+    [[ $# -lt 2 ]] && return
+
     local vol mutestatus
     IFS=" " read -r _ vol mutestatus <<< "$(wpctl get-volume "$1" 2> /dev/null)"
     [[ -z $vol ]] && return
@@ -209,6 +222,8 @@ block_pwvol() {
 }
 
 block_datetime() {
+    [[ $# -lt 1 ]] && return
+
     local date
     date="$(date "+$1")"
 

@@ -110,7 +110,7 @@ Available variables:
 \fB%load15\fR - load average during the last 15 minutes
 
 .TP
-\fBblock_battery\fR <battery-name> <discharging-label> <charging-label> <full-label>
+\fBblock_battery\fR <battery-name> <charging-label> <discharging-label> <full-label>
 Shows battery information.
 .sp
 To list available batteries, run '\fBls /sys/class/power_supply\fR'
@@ -120,7 +120,7 @@ Available variables:
 \fB%percentage\fR - battery percentage
 .br
 \fB%status\fR     - depending on the current battery status, this contains either\&
-\fI<discharging-label>\fR, \fI<charging-label>\fR or \fI<full-label>\fR.
+\fI<charging-label>\fR, \fI<discharging-label>\fR or \fI<full-label>\fR.
 
 .TP
 \fBblock_backlight\fR <card> <brightness-file>

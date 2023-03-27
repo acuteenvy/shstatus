@@ -169,8 +169,8 @@ block_pavol() {
     [[ $# -lt 2 ]] && return
 
     local vol mutestatus
-    vol="$(pactl get-sink-volume "$1" 2> /dev/null | \
-        awk -F'/' '{ print $2 }')"
+    read -r _ _ _ _ vol <<< "$(pactl get-sink-volume "$1" 2> /dev/null)"
+    vol="${vol%% *}"
     [[ -z $vol ]] && return
     vol="${vol//[[:space:]]/}"
 
@@ -234,10 +234,9 @@ block_datetime() {
 }
 
 case "$1" in
-    "help" | "-h" | "--help") cat << EOF
-Usage: $(basename "$0") [config-file]
-See 'man shstatus' for more information
-EOF
+    "help" | "-h" | "--help") echo "\
+Usage: ${0##*/} [config-file]
+See 'man shstatus' for more information"
     exit 0
 esac
 

@@ -4,18 +4,30 @@
 # https://github.com/acuteenvy/shstatus
 # License: MIT
 
-
+# Display a red message in the bar.
 err() {
-    # Display a red message in the bar
     echo "[{\"color\":\"#ff0000\",\"full_text\":\"$*\"}]"
-    sleep infinity
+    snore
 }
 
+# Open a file descriptor that does not output anything.
+exec {snore_fd}<> <(:)
+
+# Sleep function in pure bash.
+# Usage: snore <time in seconds>
+# If called without arguments, it will sleep forever.
+snore() {
+    # Read the fd and stop after $1 seconds.
+    read ${1:+"-t$1"} -ru "$snore_fd"
+}
+
+# Block generator.
+# This function should always be called without any arguments.
 block() {
-    # Begin the block
+    # Begin the block.
     echo -n "{"
 
-    # Print all variables
+    # Print all variables.
     [[ -n $full_text ]] && echo -n "\"full_text\":\"$full_text\""
     [[ -n $short_text ]] && echo -n ",\"short_text\":\"$short_text\""
     [[ -n $color ]] && echo -n ",\"color\":\"$color\""
@@ -31,7 +43,7 @@ block() {
     [[ -n $separator ]] && echo -n ",\"separator\":$separator"
     [[ -n $separator_block_width ]] && echo -n ",\"separator_block_width\":$separator_block_width"
 
-    # End the block
+    # End the block.
     echo -n "},"
 }
 
@@ -91,7 +103,7 @@ block_disk() {
     local disk size used avail usepercent mountpoint dfinfo
     ! dfinfo="$(df -h "$1")" && return
 
-    # Remove the header
+    # Remove the header.
     dfinfo="${dfinfo#*$'\n'}"
     IFS=" " read -r disk size used avail usepercent mountpoint <<< "$dfinfo"
 
@@ -137,10 +149,10 @@ block_mem() {
     local memtotal memused memavail swaptotal swapused swapavail
     free="$(free -h)"
 
-    # Remove the header
+    # Remove the header.
     free="${free#*$'\n'}"
 
-    # Read the first line, remove it, then read the second line
+    # Read the first line, remove it, then read the second line.
     IFS=" " read -r _ memtotal memused _ _ _ memavail <<< "$free"
     free="${free#*$'\n'}"
     IFS=" " read -r _ swaptotal swapused swapavail <<< "$free"
@@ -240,7 +252,7 @@ See 'man shstatus' for more information"
     exit 0
 esac
 
-# Print the header and begin an infinite array
+# Print the header and begin an infinite array.
 echo '{"version":1}'
 echo "["
 
@@ -256,14 +268,14 @@ source "$config"
 [[ $(type -t update) != "function" ]] && err "update() is undefined"
 
 while true; do
-    # Begin an array of blocks
+    # Begin an array of blocks.
     echo "["
 
-    # Remove the trailing comma and print the blocks
+    # Remove the trailing comma and print the blocks.
     blocks="$(update)"
     echo -n "${blocks::-1}"
 
-    # End the array
+    # End the array.
     echo -e "\n],"
-    sleep "$interval"
+    snore "$interval"
 done

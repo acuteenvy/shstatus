@@ -57,7 +57,7 @@ datetime() {
     local full_text="%date"
     local color="#a6e3a1"
 
-    block_datetime "%c"
+    block_datetime "%c" "printf"
 }
 
 update() {

@@ -234,10 +234,14 @@ block_pwvol() {
 }
 
 block_datetime() {
-    [[ $# -lt 1 ]] && return
+    [[ $# -lt 2 ]] && return
 
     local date
-    date="$(date "+$1")"
+    case $2 in
+        printf) printf -v date "%($1)T" "-1";;
+        date) date="$(date "+$1")";;
+        *) return;;
+    esac
 
     [[ -n $full_text ]] && local full_text="${full_text/\%date/$date}"
     [[ -n $short_text ]] && local short_text="${short_text/\%date/$date}"

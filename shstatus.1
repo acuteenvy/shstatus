@@ -1,11 +1,21 @@
-.TH "SHSTATUS" "1" "2023-03-22"  "shstatus 1.0.0" "shstatus manual"
+.TH "SHSTATUS" "1" "2023-03-30"  "shstatus 1.1.0" "shstatus manual"
 .nh
 .ad l
 .SH NAME
 shstatus - a simple statusline generator for i3bar and swaybar
 
 .SH SYNOPSIS
-\fIshstatus\fR [config-file]
+\fIshstatus\fR [-h | --help] [-v | --version] [config-file]
+
+.SH OPTIONS
+.TP
+.B -h, --help
+.br
+Print a help message.
+.TP
+.B -v, --version
+.br
+Print version information.
 
 .SH CONFIGURATION
 .TP
@@ -40,12 +50,15 @@ They are described in the next section.
 
 .SH BUILTIN BLOCKS
 .TP
-\fBblock_datetime\fR <date-formatstring>
+\fBblock_datetime\fR <date-formatstring> <program>
 Shows the date and time.
+.sp
+\fI<program>\fR can be either '\fBprintf\fR' or '\fBdate\fR'.\&
+See \fBstrftime\fR(3) for how to use \fBprintf\fR, or \fBdate\fR(1) for how to use \fBdate\fR.
 .sp
 Available variables:
 .br
-\fB%date\fR - output of \fBdate\fR(1) +'\fI<date-formatstring>\fR'
+\fB%date\fR - current date
 
 .TP
 \fBblock_pwvol\fR <pipewire-sink> <mute-string>
@@ -144,7 +157,7 @@ Available variables:
 Generic block generator without any variables. Useful for writing your own blocks.
 
 .SH SEE ALSO
-\fBswaybar-protocol\fR(7), \fBdate\fR(1), \fBpactl\fR(1)
+\fBswaybar-protocol\fR(7), \fBstrftime\fR(3), \fBdate\fR(1), \fBpactl\fR(1)
 .sp
 i3bar protocol specification
 .br

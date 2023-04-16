@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  shellcheck:
     runs-on: ubuntu-latest
 
     steps:

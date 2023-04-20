@@ -79,7 +79,7 @@ block_battery() {
 
     read -r percentage < "$path/$1/capacity"
     read -r status < "$path/$1/status"
-    case "$status" in
+    case $status in
         Charging) status="$2";;
         Discharging) status="$3";;
         Full) status="$4";;
@@ -250,7 +250,7 @@ block_datetime() {
 }
 
 main() {
-    case "$1" in
+    case $1 in
         "help" | "-h" | "--help")
             printf '%b' "Usage: ${0##*/} [-hv] [config-file]\nSee 'man shstatus' for more information\n"
             exit 0

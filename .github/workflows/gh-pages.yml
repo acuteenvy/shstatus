@@ -42,7 +42,7 @@ jobs:
           mkdir page
           # Convert it to markdown first to highlight bare URLs
           pandoc shstatus.1 --output page.md
-          pandoc page.md --from markdown+autolink_bare_uris --self-contained --css style.css --output page/index.html
+          pandoc page.md --from markdown+autolink_bare_uris --metadata title="shstatus manual" --self-contained --css style.css --output page/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v3

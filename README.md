@@ -17,6 +17,6 @@ $ cd shstatus-VERSION
 An [AUR package](https://aur.archlinux.org/packages/shstatus) is also available.
 
 ## Configuration
-See `man shstatus`.
+See `man shstatus` or the [online manpage](https://acuteenvy.github.io/shstatus).
 
 [latest-release]: https://github.com/acuteenvy/shstatus/releases/latest

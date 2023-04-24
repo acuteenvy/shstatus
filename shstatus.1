@@ -10,11 +10,12 @@ shstatus - a simple statusline generator for i3bar and swaybar
 .SH OPTIONS
 .TP
 .B -h, --help
-.br
+.RS 4
 Print a help message.
+.RE
 .TP
 .B -v, --version
-.br
+.RS 4
 Print version information.
 
 .SH CONFIGURATION
@@ -51,6 +52,7 @@ They are described in the next section.
 .SH BUILTIN BLOCKS
 .TP
 \fBblock_datetime\fR <date-formatstring> <program>
+.RS 4
 Shows the date and time.
 .sp
 \fI<program>\fR can be either '\fBprintf\fR' or '\fBdate\fR'.\&
@@ -59,9 +61,11 @@ See \fBstrftime\fR(3) for how to use \fBprintf\fR, or \fBdate\fR(1) for how to u
 Available variables:
 .br
 \fB%date\fR - current date
+.RE
 
 .TP
 \fBblock_pwvol\fR <pipewire-sink> <mute-string>
+.RS 4
 Shows the current volume. Works on pipewire with wireplumber.
 .sp
 Available variables:
@@ -69,13 +73,17 @@ Available variables:
 \fB%vol\fR        - current volume
 .br
 \fB%mutestatus\fR - if volume is muted, this variable contains \fI<mute-string>\fR. Otherwise it is empty.
+.RE
 
 .TP
 \fBblock_pavol\fR <pulseaudio-sink> <mute-string>
+.RS 4
 Same as \fBblock_pwvol\fR, but for pulseaudio.
+.RE
 
 .TP
 \fBblock_disk\fR <device or mountpoint>
+.RS 4
 Shows disk usage.
 .sp
 Available variables:
@@ -91,9 +99,11 @@ Available variables:
 \fB%usepercent\fR - percentage of used disk space
 .br
 \fB%mountpoint\fR - device mountpoint
+.RE
 
 .TP
 \fBblock_mem\fR
+.RS 4
 Shows memory and swap usage.
 .sp
 Available variables:
@@ -109,9 +119,11 @@ Available variables:
 \fB%swapused\fR  - used swap
 .br
 \fB%swapavail\fR - available swap
+.RE
 
 .TP
 \fBblock_loadavg\fR
+.RS 4
 Shows the load average.
 .sp
 Available variables:
@@ -121,9 +133,11 @@ Available variables:
 \fB%load5\fR  - load average during the last 5 minutes
 .br
 \fB%load15\fR - load average during the last 15 minutes
+.RE
 
 .TP
 \fBblock_battery\fR <battery-name> <charging-label> <discharging-label> <full-label>
+.RS 4
 Shows battery information.
 .sp
 To list available batteries, run '\fBls /sys/class/power_supply\fR'
@@ -134,9 +148,11 @@ Available variables:
 .br
 \fB%status\fR     - depending on the current battery status, this contains either\&
 \fI<charging-label>\fR, \fI<discharging-label>\fR or \fI<full-label>\fR.
+.RE
 
 .TP
 \fBblock_backlight\fR <card> <brightness-file>
+.RS 4
 Shows information about the current monitor brightness.
 .sp
 \fI<brightness_file>\fR can be either '\fBactual_brightness\fR' or '\fBbrightness\fR'.
@@ -150,11 +166,13 @@ Available variables:
 \fB%max\fR        - contents of \fB/sys/class/backlight/\fI<card>\fB/max_brightness\fR
 .br
 \fB%percentage\fR - brightness percentage
+.RE
 
 .TP
 \fBblock\fR
-.br
+.RS 4
 Generic block generator without any variables. Useful for writing your own blocks.
+.RE
 
 .SH SEE ALSO
 \fBswaybar-protocol\fR(7), \fBstrftime\fR(3), \fBdate\fR(1), \fBpactl\fR(1)

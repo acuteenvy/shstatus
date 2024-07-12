@@ -32,6 +32,13 @@ loadavg() {
     block_loadavg
 }
 
+cpu() {
+    local full_text="CPU: %usage%"
+    local color="#f2cdcd"
+
+    block_cpu
+}
+
 mem() {
     local full_text="MEM: %memavail SWAP: %swapavail"
     local color="#74c7ec"
@@ -64,6 +71,7 @@ update() {
     kern
     backlight
     loadavg
+    cpu
     mem
     disk
     vol

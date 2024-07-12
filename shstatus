@@ -145,6 +145,31 @@ block_loadavg() {
     block
 }
 
+PREV_TOTAL=0
+PREV_IDLE=0
+block_cpu() {
+    local stat user nice system idle iowait irq softirq steal guest guest_nice
+    stat="$(</proc/stat)"
+    # Get the first line from /proc/stat
+    stat="${stat%%$'\n'*}"
+    read -r _ user nice system idle iowait irq softirq steal guest guest_nice <<< "$stat"
+
+    local total diff_total diff_idle usage
+    total=$((user + nice + system + idle + iowait + irq + softirq + steal + guest + guest_nice))
+
+    diff_total=$((total - PREV_TOTAL))
+    diff_idle=$((idle - PREV_IDLE))
+    usage=$(( 100 * (diff_total - diff_idle) / diff_total ))
+
+    PREV_TOTAL="$total"
+    PREV_IDLE="$idle"
+
+    [[ -n $full_text ]] && local full_text="${full_text/\%usage/$usage}"
+    [[ -n $short_text ]] && local short_text="${short_text/\%usage/$usage}"
+
+    block
+}
+
 block_mem() {
     local memtotal memused memavail swaptotal swapused swapavail
     free="$(free -h)"

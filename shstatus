@@ -48,7 +48,7 @@ block() {
 }
 
 block_backlight() {
-    declare -r path="/sys/class/backlight"
+    local -r path="/sys/class/backlight"
     [[ $# -lt 2 || ! -d $path/$1 || ! -f $path/$1/$2 ]] && return
 
     local current max percentage
@@ -72,7 +72,7 @@ block_backlight() {
 }
 
 block_battery() {
-    declare -r path="/sys/class/power_supply"
+    local -r path="/sys/class/power_supply"
     [[ $# -lt 4 || ! -d $path/$1 || ! -f $path/$1/capacity ]] && return
 
     local percentage status
@@ -171,7 +171,7 @@ block_cpu() {
 }
 
 block_mem() {
-    local memtotal memused memavail swaptotal swapused swapavail
+    local free memtotal memused memavail swaptotal swapused swapavail
     free="$(free -h)"
 
     # Remove the header.
@@ -286,7 +286,7 @@ main() {
     # Print the header and begin an infinite array.
     printf '{"version":1}\n[\n'
 
-    config="/etc/shstatus/config.sh"
+    local config="/etc/shstatus/config.sh"
     [[ -f "$HOME/.config/shstatus/config.sh" ]] && config="$HOME/.config/shstatus/config.sh"
     [[ -n $1 ]] && config="$1"
     [[ ! -f $config ]] && err "'$config': not a file"

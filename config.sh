@@ -1,8 +1,26 @@
 # shellcheck shell=bash
 # shellcheck disable=2034
 
+# shstatus config file
+#
+# This file is sourced by shstatus.
+# Everything you put here will be executed exactly once,
+# except the functions specified in the `blocks` array,
+# which are executed every `interval` seconds to generate
+# information for the bar.
+
+
+# Time between updates, in seconds.
 interval=1
-blocks=(kern cpu backlight loadavg mem disk vol battery datetime)
+# An array of function names.
+# Each function must set some variables (`full_text` is required, the rest is optional).
+# The results are then displayed in the bar.
+# You can find a list of available variables here:
+# https://i3wm.org/docs/i3bar-protocol.html
+# shstatus provides `block_*` functions, which will insert
+# system information into the `full_text` and `short_text` variables.
+# See `man shstatus` for details.
+blocks=(kern backlight cpu loadavg mem disk vol battery datetime)
 
 kernel="$(uname -sr)"
 kern() {

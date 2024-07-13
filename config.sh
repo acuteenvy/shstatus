@@ -2,79 +2,66 @@
 # shellcheck disable=2034
 
 interval=1
+blocks=(kern cpu backlight loadavg mem disk vol battery datetime)
 
 kernel="$(uname -sr)"
 kern() {
-    local full_text="$kernel"
-    local color="#fab387"
-
-    block
+    full_text="$kernel"
+    color="#fab387"
 }
 
 backlight() {
-    local full_text="BRIGHTNESS: %percentage"
-    local color="#f9e2af"
+    full_text="BRIGHTNESS: %percentage"
+    color="#f9e2af"
 
     block_backlight "intel_backlight" "actual_brightness"
 }
 
 battery() {
-    local full_text="BAT: %status %percentage"
-    local color="#94e2d5"
+    full_text="BAT: %status %percentage"
+    color="#94e2d5"
 
     block_battery "BAT1" "CHR" "DIS" "FULL"
 }
 
 loadavg() {
-    local full_text="LOADAVG: %load1 / %load5 / %load15"
-    local color="#f38ba8"
+    full_text="LOADAVG: %load1 / %load5 / %load15"
+    color="#f38ba8"
 
     block_loadavg
 }
 
 cpu() {
-    local full_text="CPU: %usage%"
-    local color="#f2cdcd"
+    full_text="CPU: %usage%"
+    color="#f2cdcd"
 
     block_cpu
 }
 
 mem() {
-    local full_text="MEM: %memavail SWAP: %swapavail"
-    local color="#74c7ec"
+    full_text="MEM: %memavail SWAP: %swapavail"
+    color="#74c7ec"
 
     block_mem
 }
 
 disk() {
-    local full_text="DISK: %avail"
-    local color="#f2c2e7"
+    full_text="DISK: %avail"
+    color="#f2c2e7"
 
     block_disk "/"
 }
 
 vol() {
-    local full_text="VOL: %vol%mutestatus"
-    local color="#cba6f7"
+    full_text="VOL: %vol%mutestatus"
+    color="#cba6f7"
 
     block_pwvol "@DEFAULT_SINK@" " [MUTED]"
 }
 
 datetime() {
-    local full_text="%date"
-    local color="#a6e3a1"
+    full_text="%date"
+    color="#a6e3a1"
 
     block_datetime "%c" "printf"
-}
-
-update() {
-    kern
-    backlight
-    loadavg
-    cpu
-    mem
-    disk
-    vol
-    battery
-    datetime
 }

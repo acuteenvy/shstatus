@@ -10,6 +10,16 @@ err() {
     snore
 }
 
+# Display an error in a specific block.
+berr() {
+    full_text="$*"
+    color="#ff0000"
+}
+
+invalid_args() {
+    berr "expected $1 args, got $2"
+}
+
 # Open a file descriptor that does not output anything.
 exec {snore_fd}<> <(:)
 
@@ -18,11 +28,13 @@ exec {snore_fd}<> <(:)
 # If called without arguments, it will sleep forever.
 snore() {
     # Read the fd and stop after $1 seconds.
-    read ${1:+"-t$1"} -ru "$snore_fd"
+    read ${1:+"-t$1"} -ru "$snore_fd" || :
 }
 
 # Block generator.
 # This function should always be called without any arguments.
+# Commas are added in main(), because trailing commas are not supported by i3's JSON parser,
+# and probably won't ever be: https://github.com/i3/i3/issues/3498
 block() {
     # Begin the block.
     printf "{"
@@ -44,41 +56,46 @@ block() {
     [[ -n $separator_block_width ]] && printf ',"separator_block_width":%s' "$separator_block_width"
 
     # End the block.
-    printf "},"
+    printf '}'
+
+    # Unset the variables to prevent using the same config
+    # in the next block.
+    unset full_text short_text color background
+    unset border border_top border_bottom border_left border_right
+    unset min_width align urgent
+    unset separator separator_block_width
 }
 
 block_backlight() {
     local -r path="/sys/class/backlight"
-    [[ $# -lt 2 || ! -d $path/$1 || ! -f $path/$1/$2 ]] && return
+    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
 
     local current max percentage
 
-    read -r current < "$path/$1/$2"
-    read -r max < "$path/$1/max_brightness"
+    ! read -r current < "$path/$1/$2" && berr "could not read $path/$1/$2" && return
+    ! read -r max < "$path/$1/max_brightness" && berr "could not read $path/$1/max_brightness" && return
     local percentage=$((current * 100 / max))
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%current/$current}"
+        full_text="${full_text/\%current/$current}"
         full_text="${full_text/\%max/$max}"
         full_text="${full_text/\%percentage/$percentage%}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%current/$current}"
+        short_text="${short_text/\%current/$current}"
         short_text="${short_text/\%max/$max}"
         short_text="${short_text/\%percentage/$percentage%}"
     fi
-
-    block
 }
 
 block_battery() {
     local -r path="/sys/class/power_supply"
-    [[ $# -lt 4 || ! -d $path/$1 || ! -f $path/$1/capacity ]] && return
+    [[ $# -ne 4 ]] && invalid_args 4 "$#" && return
 
     local percentage status
 
-    read -r percentage < "$path/$1/capacity"
-    read -r status < "$path/$1/status"
+    ! read -r percentage < "$path/$1/capacity" && berr "could not read $path/$1/capacity" && return
+    ! read -r status < "$path/$1/status" && berr "could not read $path/$1/status" && return
     case $status in
         Charging) status="$2";;
         Discharging) status="$3";;
@@ -86,29 +103,27 @@ block_battery() {
     esac
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%percentage/$percentage%}"
+        full_text="${full_text/\%percentage/$percentage%}"
         full_text="${full_text/\%status/$status}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%percentage/$percentage%}"
+        short_text="${short_text/\%percentage/$percentage%}"
         short_text="${short_text/\%status/$status}"
     fi
-
-    block
 }
 
 block_disk() {
-    [[ $# -lt 1 ]] && return
+    [[ $# -ne 1 ]] && invalid_args 1 "$#" && return
 
     local disk size used avail usepercent mountpoint dfinfo
-    ! dfinfo="$(df -h "$1")" && return
+    ! dfinfo="$(df -h "$1" 2>&1)" && berr "$dfinfo" && return
 
     # Remove the header.
     dfinfo="${dfinfo#*$'\n'}"
     IFS=" " read -r disk size used avail usepercent mountpoint <<< "$dfinfo"
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%disk/$disk}"
+        full_text="${full_text/\%disk/$disk}"
         full_text="${full_text/\%size/$size}"
         full_text="${full_text/\%used/$used}"
         full_text="${full_text/\%avail/$avail}"
@@ -116,43 +131,38 @@ block_disk() {
         full_text="${full_text/\%mountpoint/$mountpoint}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%disk/$disk}"
+        short_text="${short_text/\%disk/$disk}"
         short_text="${short_text/\%size/$size}"
         short_text="${short_text/\%used/$used}"
         short_text="${short_text/\%avail/$avail}"
         short_text="${short_text/\%usepercent/$usepercent}"
         short_text="${short_text/\%mountpoint/$mountpoint}"
     fi
-
-    block
 }
 
 block_loadavg() {
     local load1 load5 load15
-    IFS=" " read -r load1 load5 load15 _ _ < /proc/loadavg
+    ! IFS=" " read -r load1 load5 load15 _ _ < /proc/loadavg && berr "could not read /proc/loadavg" && return
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%load1/$load1}"
+        full_text="${full_text/\%load1/$load1}"
         full_text="${full_text/\%load5/$load5}"
         full_text="${full_text/\%load15/$load15}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%load1/$load1}"
+        short_text="${short_text/\%load1/$load1}"
         short_text="${short_text/\%load5/$load5}"
         short_text="${short_text/\%load15/$load15}"
     fi
-
-    block
 }
 
 PREV_TOTAL=0
 PREV_IDLE=0
 block_cpu() {
     local stat user nice system idle iowait irq softirq steal guest guest_nice
-    stat="$(</proc/stat)"
     # Get the first line from /proc/stat
-    stat="${stat%%$'\n'*}"
-    read -r _ user nice system idle iowait irq softirq steal guest guest_nice <<< "$stat"
+    ! read -r stat < /proc/stat && berr "could not read /proc/stat" && return
+    IFS=" " read -r _ user nice system idle iowait irq softirq steal guest guest_nice <<< "$stat"
 
     local total diff_total diff_idle usage
     total=$((user + nice + system + idle + iowait + irq + softirq + steal + guest + guest_nice))
@@ -164,15 +174,14 @@ block_cpu() {
     PREV_TOTAL="$total"
     PREV_IDLE="$idle"
 
-    [[ -n $full_text ]] && local full_text="${full_text/\%usage/$usage}"
-    [[ -n $short_text ]] && local short_text="${short_text/\%usage/$usage}"
-
-    block
+    [[ -n $full_text ]] && full_text="${full_text/\%usage/$usage}"
+    [[ -n $short_text ]] && short_text="${short_text/\%usage/$usage}"
+    return 0
 }
 
 block_mem() {
     local free memtotal memused memavail swaptotal swapused swapavail
-    free="$(free -h)"
+    ! free="$(free -h 2>&1)" && berr "${free%%$'\n'*}" && return
 
     # Remove the header.
     free="${free#*$'\n'}"
@@ -183,7 +192,7 @@ block_mem() {
     IFS=" " read -r _ swaptotal swapused swapavail <<< "$free"
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%memtotal/$memtotal}"
+        full_text="${full_text/\%memtotal/$memtotal}"
         full_text="${full_text/\%memused/$memused}"
         full_text="${full_text/\%memavail/$memavail}"
         full_text="${full_text/\%swaptotal/$swaptotal}"
@@ -191,28 +200,25 @@ block_mem() {
         full_text="${full_text/\%swapavail/$swapavail}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%memtotal/$memtotal}"
+        short_text="${short_text/\%memtotal/$memtotal}"
         short_text="${short_text/\%memused/$memused}"
         short_text="${short_text/\%memavail/$memavail}"
         short_text="${short_text/\%swaptotal/$swaptotal}"
         short_text="${short_text/\%swapused/$swapused}"
         short_text="${short_text/\%swapavail/$swapavail}"
     fi
-
-    block
 }
 
 block_pavol() {
-    [[ $# -lt 2 ]] && return
+    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
 
     local vol mutestatus
-    read -r _ _ _ _ vol <<< "$(pactl get-sink-volume "$1" 2> /dev/null)"
+    ! vol="$(pactl get-sink-volume "$1" 2>&1)" && berr "pactl: $vol" && return
+    IFS=" " read -r _ _ _ _ vol <<< "$vol"
     vol="${vol%% *}"
-    [[ -z $vol ]] && return
     vol="${vol//[[:space:]]/}"
 
-    mutestatus="$(pactl get-sink-mute "$1" 2> /dev/null)"
-    [[ -z $mutestatus ]] && return
+    ! mutestatus="$(pactl get-sink-mute "$1" 2>&1)" && berr "pactl: $mutestatus" && return
     if [[ $mutestatus == *yes* ]]; then
         mutestatus="$2"
     else
@@ -220,23 +226,21 @@ block_pavol() {
     fi
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%vol/$vol}"
+        full_text="${full_text/\%vol/$vol}"
         full_text="${full_text/\%mutestatus/$mutestatus}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%vol/$vol}"
+        short_text="${short_text/\%vol/$vol}"
         short_text="${short_text/\%mutestatus/$mutestatus}"
     fi
-
-    block
 }
 
 block_pwvol() {
-    [[ $# -lt 2 ]] && return
+    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
 
     local vol mutestatus
-    IFS=" " read -r _ vol mutestatus <<< "$(wpctl get-volume "$1" 2> /dev/null)"
-    [[ -z $vol ]] && return
+    ! vol="$(wpctl get-volume "$1" 2>&1)" && berr "wpctl: ${vol%%$'\n'*}" && return
+    IFS=" " read -r _ vol mutestatus <<< "$vol"
     vol="${vol/./}"
     vol=$((10#$vol))
 
@@ -247,31 +251,28 @@ block_pwvol() {
     fi
 
     if [[ -n $full_text ]]; then
-        local full_text="${full_text/\%vol/$vol%}"
+        full_text="${full_text/\%vol/$vol%}"
         full_text="${full_text/\%mutestatus/$mutestatus}"
     fi
     if [[ -n $short_text ]]; then
-        local short_text="${short_text/\%vol/$vol%}"
+        short_text="${short_text/\%vol/$vol%}"
         short_text="${short_text/\%mutestatus/$mutestatus}"
     fi
-
-    block
 }
 
 block_datetime() {
-    [[ $# -lt 2 ]] && return
+    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
 
     local date
     case $2 in
         printf) printf -v date "%($1)T" "-1";;
         date) date="$(date "+$1")";;
-        *) return;;
+        *) berr "expected 'date' or 'printf' as the second arg, got '$2'" && return;;
     esac
 
-    [[ -n $full_text ]] && local full_text="${full_text/\%date/$date}"
-    [[ -n $short_text ]] && local short_text="${short_text/\%date/$date}"
-
-    block
+    [[ -n $full_text ]] && full_text="${full_text/\%date/$date}"
+    [[ -n $short_text ]] && short_text="${short_text/\%date/$date}"
+    return 0
 }
 
 main() {
@@ -295,15 +296,27 @@ main() {
     source "$config"
 
     [[ -z $interval ]] && err "interval not specified"
-    [[ $(type -t update) != "function" ]] && err "update() is undefined"
+    [[ -z ${blocks[*]} ]] && err "the blocks array is empty"
+    [[ ! "$(declare -p blocks)" =~ "declare -a" ]] && err "blocks is not an array"
+    for ((i=0; i < ${#blocks[@]}; i++)); do
+        bl="${blocks[$i]}"
+        [[ $(type -t "$bl") != "function" ]] && err "$bl (block number ${i+1}) is not a function"
+    done
 
     while true; do
         # Begin an array of blocks.
         printf "[\n"
 
-        # Remove the trailing comma and print the blocks.
-        blocks="$(update)"
-        printf '%s' "${blocks::-1}"
+        # Print the first block without a comma.
+        "${blocks[0]}" && block
+        for prepare_fn in "${blocks[@]:1}"; do
+            # Separate subsequent blocks. See the comment above the definition of block().
+            printf ','
+            # These functions set variables needed for block() to construct a block.
+            "$prepare_fn"
+            # Print the block.
+            block
+        done
 
         # End the array.
         printf "\n],\n"

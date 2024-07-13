@@ -1,11 +1,13 @@
-.TH "SHSTATUS" "1" "2023-03-30"  "shstatus 1.1.0" "shstatus manual"
+.TH "SHSTATUS" "1" "2024-07-13"  "shstatus 2.0.0" "shstatus manual"
 .nh
 .ad l
 .SH NAME
 shstatus - a simple statusline generator for i3bar and swaybar
 
+
 .SH SYNOPSIS
-\fIshstatus\fR [-h | --help] [-v | --version] [config-file]
+\fIshstatus\fR [-h | --help] [-v | --version] [path/to/config.sh]
+
 
 .SH OPTIONS
 .TP
@@ -13,50 +15,83 @@ shstatus - a simple statusline generator for i3bar and swaybar
 .RS 4
 Print a help message.
 .RE
+
 .TP
 .B -v, --version
 .RS 4
 Print version information.
 
+
+.SH USAGE
+To use \fIshstatus\fR in your statusbar, add this to your i3 or sway config file:
+.IP
+.nf
+bar {
+    status_command shstatus
+}
+.fi
+.PP
+
+
 .SH CONFIGURATION
 .TP
 shstatus looks for configuration files in the following order:
+
 .sp
 .RS 4
-1. \fB~/config/shstatus/config.sh\fR
+1. \fB$XDG_CONFIG_HOME/shstatus/config.sh\fR
 .sp
-2. \fB/etc/shstatus/config.sh\fR
+2. \fB$HOME/.config/shstatus/config.sh\fR
+.sp
+3. \fB/etc/shstatus/config.sh\fR
 .RE
+
 .sp
 Specifying an alternate config file overrides the default paths.
+
 .sp
 In the config file, you have to define:
 .sp
+
 .RS 4
 1. A variable '\fBinterval\fR'
 .sp
-2. A function '\fBupdate\fR'
+2. An array '\fBblocks\fR'
 .RE
-.sp
-\fBupdate()\fR will be run every '\fBinterval\fR' seconds to update the status bar.\&
-You can see an example config file in \fB/etc/shstatus/config.sh\fR.\&
-It contains usage examples of every builtin block.\&
-Copy it to \fB~/.config/shstatus/config.sh\fR and edit it from there.
-.sp
-Inside \fBupdate()\fR you can either use some builtin blocks or write your own.\&
-Before using a builtin block function, you can define variables to customize its output.\&
-For a list of variables, see \fBswaybar-protocol\fR(7) or \fBhttps://i3wm.org/docs/i3bar-protocol.html\fR.\&
-Inside 'full_text' and 'short_text' additional variables for each block are available.\&
-They are described in the next section.
 
-.SH BUILTIN BLOCKS
+.sp
+Every element in the \fBblocks\fR array must be a function name.\&
+All of these functions should be defined in your \fBconfig.sh\fR.
+Each function must set the \fBfull_text\fR variable - this is the text\&
+that will be displayed in the status bar. There are a lot more variables available - see\&
+\fBswaybar-protocol\fR(7) or \fBhttps://i3wm.org/docs/i3bar-protocol.html\fR for the full list.\&
+\fIshstatus\fR will run all functions in the specified order, and then print\&
+all set variables as JSON in order to display the information in the bar.\&
+This is done every \fBinterval\fR seconds.
+
+.sp
+Inside the config, you can use some of the functions provided by \fIshstatus\fR to\&
+insert information into \fBfull_text\fR and \fBshort_text\fR.\&
+These functions replace variables (denoted \fB%var_name\fR) inside the bash variables \fBfull_text\fR and \fBshort_text\fR\&
+with some information. For example, \fB%date\fR will be replaced with the current date and time\&
+if you run '\fBblock_datetime "%c" "printf"\fR' in your function.
+.br
+See the next section for a detailed description of every function.
+
+.sp
+There is an example config file in \fB/etc/shstatus/config.sh\fR.\&
+It contains usage examples of every block function.\&
+Copy it to your home directory and edit it from there.
+
+.SH BLOCK FUNCTIONS
 .TP
 \fBblock_datetime\fR <date-formatstring> <program>
 .RS 4
 Shows the date and time.
 .sp
 \fI<program>\fR can be either '\fBprintf\fR' or '\fBdate\fR'.\&
-See \fBstrftime\fR(3) for how to use \fBprintf\fR, or \fBdate\fR(1) for how to use \fBdate\fR.
+See \fBstrftime\fR(3) for how to use \fBprintf\fR, or \fBdate\fR(1) for how to use \fBdate\fR.\&
+\fBprintf\fR is a bash builtin, whereas \fBdate\fR requires the GNU coreutils.
 .sp
 Available variables:
 .br
@@ -66,7 +101,8 @@ Available variables:
 .TP
 \fBblock_pwvol\fR <pipewire-sink> <mute-string>
 .RS 4
-Shows the current volume. Works on pipewire with wireplumber.
+Shows the current volume. \fIshstatus\fR uses \fBwpctl\fR for this, and\&
+therefore this function requires pipewire and wireplumber.
 .sp
 Available variables:
 .br
@@ -78,13 +114,14 @@ Available variables:
 .TP
 \fBblock_pavol\fR <pulseaudio-sink> <mute-string>
 .RS 4
-Same as \fBblock_pwvol\fR, but for pulseaudio.
+Same as \fBblock_pwvol\fR, but for pulseaudio (using \fBpactl\fR(1)).
 .RE
 
 .TP
 \fBblock_disk\fR <device or mountpoint>
 .RS 4
-Shows disk usage.
+Shows disk usage. \fIshstatus\fR uses \fBdf\fR(1) for this, and\&
+therefore this function requires the GNU coreutils.
 .sp
 Available variables:
 .br
@@ -104,7 +141,8 @@ Available variables:
 .TP
 \fBblock_mem\fR
 .RS 4
-Shows memory and swap usage.
+Shows memory and swap usage. \fIshstatus\fR uses \fBfree\fR(1) for this, and\&
+therefore this function requires procps-ng.
 .sp
 Available variables:
 .br
@@ -122,9 +160,19 @@ Available variables:
 .RE
 
 .TP
+\fBblock_cpu\fR
+.RS 4
+Shows the CPU usage. This is done by parsing \fB/proc/stat\fR.\&
+.sp
+Available variables:
+.br
+\fB%usage\fR - CPU usage
+.RE
+
+.TP
 \fBblock_loadavg\fR
 .RS 4
-Shows the load average.
+Shows the load average. This is done by parsing \fB/proc/loadavg\fR.
 .sp
 Available variables:
 .br
@@ -138,7 +186,7 @@ Available variables:
 .TP
 \fBblock_battery\fR <battery-name> <charging-label> <discharging-label> <full-label>
 .RS 4
-Shows battery information.
+Shows battery information. This is done by reading the files in \fB/sys/class/power_supply\fR.
 .sp
 To list available batteries, run '\fBls /sys/class/power_supply\fR'
 .sp
@@ -153,7 +201,8 @@ Available variables:
 .TP
 \fBblock_backlight\fR <card> <brightness-file>
 .RS 4
-Shows information about the current monitor brightness.
+Shows information about the screen brightness. This is done by reading the files\&
+in \fB/sys/class/backlight\fR.
 .sp
 \fI<brightness_file>\fR can be either '\fBactual_brightness\fR' or '\fBbrightness\fR'.
 .br
@@ -168,14 +217,8 @@ Available variables:
 \fB%percentage\fR - brightness percentage
 .RE
 
-.TP
-\fBblock\fR
-.RS 4
-Generic block generator without any variables. Useful for writing your own blocks.
-.RE
-
 .SH SEE ALSO
-\fBswaybar-protocol\fR(7), \fBstrftime\fR(3), \fBdate\fR(1), \fBpactl\fR(1)
+\fBswaybar-protocol\fR(7), \fBstrftime\fR(3), \fBdate\fR(1)
 .sp
 i3bar protocol specification
 .br

@@ -4,6 +4,8 @@
 # https://github.com/acuteenvy/shstatus
 # License: MIT
 
+readonly VERSION="2.0.0"
+
 # Display a red message in the bar and sleep forever.
 err() {
     printf '[{"color":"#ff0000","full_text":"%s"}]\n' "$*"
@@ -290,7 +292,7 @@ main() {
             printf '%b' "Usage: ${0##*/} [-hv] [config-file]\nSee 'man shstatus' for more information\n"
             exit 0
         ;;
-        "-v" | "--version") printf "shstatus v1.1.0\n"; exit 0;;
+        "-v" | "--version") printf "shstatus v%s\n" "$VERSION"; exit 0;;
     esac
 
     # Print the header and begin an infinite array.

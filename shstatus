@@ -287,8 +287,9 @@ main() {
     # Print the header and begin an infinite array.
     printf '{"version":1}\n[\n'
 
-    local config="/etc/shstatus/config.sh"
-    [[ -f "$HOME/.config/shstatus/config.sh" ]] && config="$HOME/.config/shstatus/config.sh"
+    local config="$XDG_CONFIG_HOME/shstatus/config.sh"
+    [[ ! -f $config ]] && config="$HOME/.config/shstatus/config.sh"
+    [[ ! -f $config ]] && config="/etc/shstatus/config.sh"
     [[ -n $1 ]] && config="$1"
     [[ ! -f $config ]] && err "'$config': not a file"
 

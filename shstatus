@@ -4,13 +4,13 @@
 # https://github.com/acuteenvy/shstatus
 # License: MIT
 
-# Display a red message in the bar.
+# Display a red message in the bar and sleep forever.
 err() {
     printf '[{"color":"#ff0000","full_text":"%s"}]\n' "$*"
     snore
 }
 
-# Display an error in a specific block.
+# Set variables to display a red message in a specific block.
 berr() {
     full_text="$*"
     color="#ff0000"
@@ -31,16 +31,28 @@ snore() {
     read ${1:+"-t$1"} -ru "$snore_fd" || :
 }
 
+# Unset all variables used to construct blocks.
+unset_block_vars() {
+    unset full_text short_text color background
+    unset border border_top border_bottom border_left border_right
+    unset min_width align urgent
+    unset separator separator_block_width
+}
+
 # Block generator.
 # This function should always be called without any arguments.
 # Commas are added in main(), because trailing commas are not supported by i3's JSON parser,
 # and probably won't ever be: https://github.com/i3/i3/issues/3498
 block() {
+    # full_text is required. If it's not set, reset all other variables
+    # and display an error in red instead.
+    [[ -z $full_text ]] && unset_block_vars && berr "full_text is not set"
+
     # Begin the block.
     printf "{"
 
     # Print all variables.
-    [[ -n $full_text ]]             && printf '"full_text":"%s"'            "$full_text"
+                                       printf '"full_text":"%s"'            "$full_text"
     [[ -n $short_text ]]            && printf ',"short_text":"%s"'          "$short_text"
     [[ -n $color ]]                 && printf ',"color":"%s"'               "$color"
     [[ -n $background ]]            && printf ',"background":"%s"'          "$background"
@@ -60,10 +72,7 @@ block() {
 
     # Unset the variables to prevent using the same config
     # in the next block.
-    unset full_text short_text color background
-    unset border border_top border_bottom border_left border_right
-    unset min_width align urgent
-    unset separator separator_block_width
+    unset_block_vars
 }
 
 block_backlight() {

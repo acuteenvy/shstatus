@@ -253,6 +253,8 @@ block_pwvol() {
     ! vol="$(wpctl get-volume "$1" 2>&1)" && berr "wpctl: ${vol%%$'\n'*}" && return
     IFS=" " read -r _ vol mutestatus <<< "$vol"
     vol="${vol/./}"
+    [[ ! $vol =~ ^[0-9]+$ ]] && berr "failed to parse wpctl output" && return
+    # Strip leading zeros.
     vol=$((10#$vol))
 
     if [[ $mutestatus == "[MUTED]" ]]; then
@@ -312,7 +314,7 @@ main() {
     [[ ! "$(declare -p blocks)" =~ "declare -a" ]] && err "blocks is not an array"
     for ((i=0; i < ${#blocks[@]}; i++)); do
         bl="${blocks[$i]}"
-        [[ $(type -t "$bl") != "function" ]] && err "$bl (block number ${i+1}) is not a function"
+        [[ $(type -t "$bl") != "function" ]] && err "$bl (block number $((i+1))) is not a function"
     done
 
     while true; do

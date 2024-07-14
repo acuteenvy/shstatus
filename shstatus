@@ -167,6 +167,32 @@ block_loadavg() {
     fi
 }
 
+block_uptime() {
+    [[ $# -ne 4 ]] && invalid_args 4 "$#" && return
+
+    local ups uptime
+    ! IFS="." read -r ups _ _ _ _ < /proc/uptime && berr "could not read /proc/uptime" && return
+    local uph=$(( ups / 3600 ))
+    local uph_s=$(( uph * 3600 ))
+    local upm=$(( (ups - uph_s) / 60))
+    local ups=$(( ups - uph_s - (60 * upm) ))
+
+    if [[ $uph -ne 0 ]]; then
+        uptime="$uph$1$4$upm$2$4$ups$3"
+    elif [[ $upm -ne 0 ]]; then
+        uptime="$upm$2$4$ups$3"
+    else
+        uptime="$ups$3"
+    fi
+
+    [[ $3 == "DISABLE" ]] && uptime="${uptime%"$ups$3"}" && uptime="${uptime%"$4"}"
+    [[ -z $uptime ]] && uptime="<1$2"
+
+    [[ -n $full_text ]] && full_text="${full_text/\%uptime/$uptime}"
+    [[ -n $short_text ]] && short_text="${short_text/\%uptime/$uptime}"
+    return 0
+}
+
 PREV_TOTAL=0
 PREV_IDLE=0
 block_cpu() {

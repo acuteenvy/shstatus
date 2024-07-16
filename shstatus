@@ -18,8 +18,9 @@ berr() {
     color="#ff0000"
 }
 
-invalid_args() {
-    berr "expected $1 args, got $2"
+check_args() {
+    [[ $1 -ne $2 ]] && berr "expected $1 args, got $2" && return 1
+    return 0
 }
 
 # Open a file descriptor that does not output anything.
@@ -78,9 +79,9 @@ block() {
 }
 
 block_backlight() {
-    local -r path="/sys/class/backlight"
-    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
+    check_args 2 "$#" || return
 
+    local -r path="/sys/class/backlight"
     local current max percentage
 
     ! read -r current < "$path/$1/$2" && berr "could not read $path/$1/$2" && return
@@ -100,9 +101,9 @@ block_backlight() {
 }
 
 block_battery() {
-    local -r path="/sys/class/power_supply"
-    [[ $# -ne 4 ]] && invalid_args 4 "$#" && return
+    check_args 4 "$#" || return
 
+    local -r path="/sys/class/power_supply"
     local percentage status
 
     ! read -r percentage < "$path/$1/capacity" && berr "could not read $path/$1/capacity" && return
@@ -124,7 +125,7 @@ block_battery() {
 }
 
 block_disk() {
-    [[ $# -ne 1 ]] && invalid_args 1 "$#" && return
+    check_args 1 "$#" || return
 
     local disk size used avail usepercent mountpoint dfinfo
     ! dfinfo="$(df -h "$1" 2>&1)" && berr "$dfinfo" && return
@@ -168,7 +169,7 @@ block_loadavg() {
 }
 
 block_uptime() {
-    [[ $# -ne 4 ]] && invalid_args 4 "$#" && return
+    check_args 4 "$#" || return
 
     local ups uptime
     ! IFS="." read -r ups _ _ _ _ < /proc/uptime && berr "could not read /proc/uptime" && return
@@ -247,7 +248,7 @@ block_mem() {
 }
 
 block_pavol() {
-    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
+    check_args 2 "$#" || return
 
     local vol mutestatus
     ! vol="$(pactl get-sink-volume "$1" 2>&1)" && berr "pactl: $vol" && return
@@ -273,7 +274,7 @@ block_pavol() {
 }
 
 block_pwvol() {
-    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
+    check_args 2 "$#" || return
 
     local vol mutestatus
     ! vol="$(wpctl get-volume "$1" 2>&1)" && berr "wpctl: ${vol%%$'\n'*}" && return
@@ -300,7 +301,7 @@ block_pwvol() {
 }
 
 block_datetime() {
-    [[ $# -ne 2 ]] && invalid_args 2 "$#" && return
+    check_args 2 "$#" || return
 
     local date
     case $2 in
@@ -348,7 +349,7 @@ main() {
         printf "[\n"
 
         # Print the first block without a comma.
-        "${blocks[0]}" && block
+        "${blocks[0]}"; block
         for prepare_fn in "${blocks[@]:1}"; do
             # Separate subsequent blocks. See the comment above the definition of block().
             printf ','

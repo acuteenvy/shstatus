@@ -169,25 +169,29 @@ block_loadavg() {
 }
 
 block_uptime() {
-    check_args 4 "$#" || return
+    check_args 5 "$#" || return
 
     local ups uptime
     ! IFS="." read -r ups _ _ _ _ < /proc/uptime && berr "could not read /proc/uptime" && return
-    local uph=$(( ups / 3600 ))
-    local uph_s=$(( uph * 3600 ))
-    local upm=$(( (ups - uph_s) / 60))
-    local ups=$(( ups - uph_s - (60 * upm) ))
+    local upd=$(( ups / 86400 ))
+    local uph_s=$(( ups % 86400 ))
+    local uph=$(( uph_s / 3600 ))
+    local upm_s=$(( uph_s % 3600 ))
+    local upm=$(( upm_s / 60))
+    local ups=$(( upm_s % 60 ))
 
-    if [[ $uph -ne 0 ]]; then
-        uptime="$uph$1$4$upm$2$4$ups$3"
+    if [[ $upd -ne 0 ]]; then
+        uptime="$upd$1$5$uph$2$5$upm$3$5$ups$4"
+    elif [[ $uph -ne 0 ]]; then
+        uptime="$uph$2$5$upm$3$5$ups$4"
     elif [[ $upm -ne 0 ]]; then
-        uptime="$upm$2$4$ups$3"
+        uptime="$upm$3$5$ups$4"
     else
-        uptime="$ups$3"
+        uptime="$ups$4"
     fi
 
-    [[ $3 == "DISABLE" ]] && uptime="${uptime%"$ups$3"}" && uptime="${uptime%"$4"}"
-    [[ -z $uptime ]] && uptime="<1$2"
+    [[ $4 == "DISABLE" ]] && uptime="${uptime%"$ups$4"}" && uptime="${uptime%"$5"}"
+    [[ -z $uptime ]] && uptime="<1$3"
 
     [[ -n $full_text ]] && full_text="${full_text/\%uptime/$uptime}"
     [[ -n $short_text ]] && short_text="${short_text/\%uptime/$uptime}"

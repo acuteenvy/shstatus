@@ -31,12 +31,12 @@ kern() {
     color="#fab387"
 }
 
-# Displays the current uptime in hours and minutes,
-# using a space as the separator, "h" to denote hours, and "min"
+# Displays the current uptime in days, hours and minutes,
+# using a space as the separator, "d" to denote days, "h" to denote hours, and "min"
 # to denote minutes.
 up() {
     full_text="up %uptime"
-    block_uptime "h" "min" "DISABLE" " "
+    block_uptime "d" "h" "min" "DISABLE" " "
 }
 
 # Displays the current screen brightness from

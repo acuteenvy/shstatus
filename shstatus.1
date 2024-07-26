@@ -1,4 +1,4 @@
-.TH "SHSTATUS" "1" "2024-07-13"  "shstatus 2.0.0" "shstatus manual"
+.TH "SHSTATUS" "1" "2024-07-26"  "shstatus 2.0.0" "shstatus manual"
 .nh
 .ad l
 .SH NAME
@@ -91,7 +91,6 @@ Shows the date and time.
 .sp
 \fI<program>\fR can be either '\fBprintf\fR' or '\fBdate\fR'.\&
 See \fBstrftime\fR(3) for how to use \fBprintf\fR, or \fBdate\fR(1) for how to use \fBdate\fR.\&
-\fBprintf\fR is a bash builtin, whereas \fBdate\fR requires the GNU coreutils.
 .sp
 Available variables:
 .br
@@ -101,8 +100,7 @@ Available variables:
 .TP
 \fBblock_pwvol\fR <pipewire-sink> <mute-string>
 .RS 4
-Shows the current volume. \fIshstatus\fR uses \fBwpctl\fR for this, and\&
-therefore this function requires pipewire and wireplumber.
+Shows the current volume. This is done using \fBwpctl\fR.
 .sp
 Available variables:
 .br
@@ -120,8 +118,7 @@ Same as \fBblock_pwvol\fR, but for pulseaudio (using \fBpactl\fR(1)).
 .TP
 \fBblock_disk\fR <device or mountpoint>
 .RS 4
-Shows disk usage. \fIshstatus\fR uses \fBdf\fR(1) for this, and\&
-therefore this function requires the GNU coreutils.
+Shows disk usage. This is done using \fBdf\fR(1).
 .sp
 Available variables:
 .br
@@ -141,8 +138,7 @@ Available variables:
 .TP
 \fBblock_mem\fR
 .RS 4
-Shows memory and swap usage. \fIshstatus\fR uses \fBfree\fR(1) for this, and\&
-therefore this function requires procps-ng.
+Shows memory and swap usage. This is done using \fBfree\fR(1).
 .sp
 Available variables:
 .br
@@ -160,9 +156,20 @@ Available variables:
 .RE
 
 .TP
+\fBblock_uptime\fR <label_days> <label_hours> <label_minutes> <label_seconds> <separator>
+.RS 4
+Shows the uptime. This is done by reading \fB/proc/uptime\fR.\&
+If \fI<label_seconds>\fR is set to \fBDISABLE\fR, the number of seconds will not be shown.
+.sp
+Available variables:
+.br
+\fB%uptime\fR - system uptime in the following format:\& \fB<number>\fI<label>\fR<separator>\fB<number>\fI<label>\fR ...
+.RE
+
+.TP
 \fBblock_cpu\fR
 .RS 4
-Shows the CPU usage. This is done by parsing \fB/proc/stat\fR.\&
+Shows the CPU usage. This is done by reading \fB/proc/stat\fR.\&
 .sp
 Available variables:
 .br
@@ -172,7 +179,7 @@ Available variables:
 .TP
 \fBblock_loadavg\fR
 .RS 4
-Shows the load average. This is done by parsing \fB/proc/loadavg\fR.
+Shows the load average. This is done by reading \fB/proc/loadavg\fR.
 .sp
 Available variables:
 .br

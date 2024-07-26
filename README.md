@@ -1,4 +1,5 @@
 # shstatus
+
 [![CI](https://github.com/acuteenvy/shstatus/actions/workflows/ci.yml/badge.svg)](https://github.com/acuteenvy/shstatus/actions/workflows/ci.yml)
 [![release](https://img.shields.io/github/v/release/acuteenvy/shstatus?display_name=tag&color=violet)][latest-release]
 [![license](https://img.shields.io/github/license/acuteenvy/shstatus?color=blueviolet)](/LICENSE)
@@ -17,6 +18,8 @@ $ cd shstatus-VERSION
 An [AUR package](https://aur.archlinux.org/packages/shstatus) is also available.
 
 ## Configuration
-See `man shstatus` or the [online manpage](https://acuteenvy.github.io/shstatus).
+See `man shstatus` or the [online manpage](https://acuteenvy.github.io/shstatus).<br>
+There is [an example config file](/config.sh) in this repository.
+It'll be installed to `/etc/shstatus/config.sh` when you run `make install`.
 
 [latest-release]: https://github.com/acuteenvy/shstatus/releases/latest

@@ -1,27 +1,28 @@
-.TH "SHSTATUS" "1" "2024-07-26"  "shstatus 2.0.0" "shstatus manual"
+.\" vim: colorcolumn=100 textwidth=100
+.TH "SHSTATUS" "1" "2025-01-25"  "shstatus 2.0.0" "shstatus manual"
 .nh
 .ad l
 .SH NAME
 shstatus - a simple statusline generator for i3bar and swaybar
-
-
+.
+.
 .SH SYNOPSIS
 \fIshstatus\fR [-h | --help] [-v | --version] [path/to/config.sh]
-
-
+.
+.
 .SH OPTIONS
 .TP
 .B -h, --help
 .RS 4
 Print a help message.
 .RE
-
+.
 .TP
 .B -v, --version
 .RS 4
 Print version information.
-
-
+.
+.
 .SH USAGE
 To use \fIshstatus\fR in your statusbar, add this to your i3 or sway config file:
 .IP
@@ -31,12 +32,12 @@ bar {
 }
 .fi
 .PP
-
-
+.
+.
 .SH CONFIGURATION
 .TP
 shstatus looks for configuration files in the following order:
-
+.
 .sp
 .RS 4
 1. \fB$XDG_CONFIG_HOME/shstatus/config.sh\fR
@@ -45,20 +46,20 @@ shstatus looks for configuration files in the following order:
 .sp
 3. \fB/etc/shstatus/config.sh\fR
 .RE
-
+.
 .sp
 Specifying an alternate config file overrides the default paths.
-
+.
 .sp
 In the config file, you have to define:
 .sp
-
+.
 .RS 4
 1. A variable '\fBinterval\fR'
 .sp
 2. An array '\fBblocks\fR'
 .RE
-
+.
 .sp
 Every element in the \fBblocks\fR array must be a function name.\&
 All of these functions should be defined in your \fBconfig.sh\fR.
@@ -68,21 +69,22 @@ that will be displayed in the status bar. There are a lot more variables availab
 \fIshstatus\fR will run all functions in the specified order, and then print\&
 all set variables as JSON in order to display the information in the bar.\&
 This is done every \fBinterval\fR seconds.
-
+.
 .sp
 Inside the config, you can use some of the functions provided by \fIshstatus\fR to\&
 insert information into \fBfull_text\fR and \fBshort_text\fR.\&
-These functions replace variables (denoted \fB%var_name\fR) inside the bash variables \fBfull_text\fR and \fBshort_text\fR\&
-with some information. For example, \fB%date\fR will be replaced with the current date and time\&
-if you run '\fBblock_datetime "%c" "printf"\fR' in your function.
+These functions replace variables (denoted \fB%var_name\fR) inside the bash variables\&
+\fBfull_text\fR and \fBshort_text\fR\& with some information. For example, \fB%date\fR will be\&
+replaced with the current date and time\& if you run '\fBblock_datetime "%c" "printf"\fR' in\&
+your function.
 .br
 See the next section for a detailed description of every function.
-
+.
 .sp
 There is an example config file in \fB/etc/shstatus/config.sh\fR.\&
 It contains usage examples of every block function.\&
 Copy it to your home directory and edit it from there.
-
+.
 .SH BLOCK FUNCTIONS
 .TP
 \fBblock_datetime\fR <date-formatstring> <program>
@@ -96,7 +98,7 @@ Available variables:
 .br
 \fB%date\fR - current date
 .RE
-
+.
 .TP
 \fBblock_pwvol\fR <pipewire-sink> <mute-string>
 .RS 4
@@ -106,15 +108,16 @@ Available variables:
 .br
 \fB%vol\fR        - current volume
 .br
-\fB%mutestatus\fR - if volume is muted, this variable contains \fI<mute-string>\fR. Otherwise it is empty.
+\fB%mutestatus\fR - if volume is muted, this variable contains \fI<mute-string>\fR.\&
+Otherwise it is empty.
 .RE
-
+.
 .TP
 \fBblock_pavol\fR <pulseaudio-sink> <mute-string>
 .RS 4
 Same as \fBblock_pwvol\fR, but for pulseaudio (using \fBpactl\fR(1)).
 .RE
-
+.
 .TP
 \fBblock_disk\fR <device or mountpoint>
 .RS 4
@@ -134,7 +137,7 @@ Available variables:
 .br
 \fB%mountpoint\fR - device mountpoint
 .RE
-
+.
 .TP
 \fBblock_mem\fR
 .RS 4
@@ -154,7 +157,7 @@ Available variables:
 .br
 \fB%swapavail\fR - available swap
 .RE
-
+.
 .TP
 \fBblock_uptime\fR <label_days> <label_hours> <label_minutes> <label_seconds> <separator>
 .RS 4
@@ -163,9 +166,10 @@ If \fI<label_seconds>\fR is set to \fBDISABLE\fR, the number of seconds will not
 .sp
 Available variables:
 .br
-\fB%uptime\fR - system uptime in the following format:\& \fB<number>\fI<label>\fR<separator>\fB<number>\fI<label>\fR ...
+\fB%uptime\fR - system uptime in the following format:\&
+\fB<number>\fI<label>\fR<separator>\fB<number>\fI<label>\fR ...
 .RE
-
+.
 .TP
 \fBblock_cpu\fR
 .RS 4
@@ -175,7 +179,7 @@ Available variables:
 .br
 \fB%usage\fR - CPU usage
 .RE
-
+.
 .TP
 \fBblock_loadavg\fR
 .RS 4
@@ -189,7 +193,7 @@ Available variables:
 .br
 \fB%load15\fR - load average during the last 15 minutes
 .RE
-
+.
 .TP
 \fBblock_battery\fR <battery-name> <charging-label> <discharging-label> <full-label>
 .RS 4
@@ -204,7 +208,7 @@ Available variables:
 \fB%status\fR     - depending on the current battery status, this contains either\&
 \fI<charging-label>\fR, \fI<discharging-label>\fR or \fI<full-label>\fR.
 .RE
-
+.
 .TP
 \fBblock_backlight\fR <card> <brightness-file>
 .RS 4
@@ -223,7 +227,7 @@ Available variables:
 .br
 \fB%percentage\fR - brightness percentage
 .RE
-
+.
 .SH SEE ALSO
 \fBswaybar-protocol\fR(7), \fBstrftime\fR(3), \fBdate\fR(1)
 .sp

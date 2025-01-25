@@ -20,7 +20,9 @@ interval=1
 # shstatus provides `block_*` functions, which will insert
 # system information into the `full_text` and `short_text` variables.
 # See `man shstatus` for details.
-blocks=(kern up backlight cpu loadavg mem disk vol battery datetime)
+blocks=(kern up cpu datetime)
+# Uncomment this if you want more stuff in the bar.
+##blocks=(kern up backlight cpu loadavg mem disk vol battery datetime)
 
 kernel="$(uname -sr)"
 # Displays the kernel name and version.

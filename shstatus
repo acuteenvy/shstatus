@@ -4,7 +4,7 @@
 # https://github.com/acuteenvy/shstatus
 # License: MIT
 
-readonly VERSION="2.0.0"
+readonly VERSION="2.0.1"
 
 # Display a red message in the bar and sleep forever.
 err() {

@@ -4,7 +4,7 @@
 # https://github.com/acuteenvy/shstatus
 # License: MIT
 
-readonly VERSION="2.0.1"
+readonly VERSION="2.0.2"
 
 # Display a red message in the bar and sleep forever.
 err() {
@@ -282,6 +282,8 @@ block_pwvol() {
 
     local vol mutestatus
     ! vol="$(wpctl get-volume "$1" 2>&1)" && berr "wpctl: ${vol%%$'\n'*}" && return
+    # Extract the last line in case any warnings were emitted before the volume info.
+    vol="${vol##*$'\n'}"
     IFS=" " read -r _ vol mutestatus <<< "$vol"
     vol="${vol/./}"
     [[ ! $vol =~ ^[0-9]+$ ]] && berr "failed to parse wpctl output" && return
